@@ -15,35 +15,80 @@ const winCombos = [
 function setMode(selected) {
   mode = selected;
   restartGame();
-  message.textContent = `Mode: ${selected === 'player' ? 'Player vs Player' : 'Player vs Computer'}`;
+  message.textContent = `Mode: ${selected === 'player' ? 'Player vs Player' : 'Player vs Computer (Hard)'}`;
 }
 
-function checkWinner() {
+function checkWinner(boardCheck = board) {
+  for (let combo of winCombos) {
+    const [a,b,c] = combo;
+    if (boardCheck[a] && boardCheck[a] === boardCheck[b] && boardCheck[a] === boardCheck[c]) {
+      return boardCheck[a];
+    }
+  }
+  return boardCheck.includes('') ? null : 'tie';
+}
+
+function highlightWin() {
   for (let combo of winCombos) {
     const [a,b,c] = combo;
     if (board[a] && board[a] === board[b] && board[a] === board[c]) {
-      gameOver = true;
       combo.forEach(i => cells[i].classList.add('win'));
-      message.textContent = `🎉 ${board[a]} MENANG!`;
-      return;
     }
-  }
-
-  if (!board.includes('')) {
-    gameOver = true;
-    message.textContent = '😐 Seri';
   }
 }
 
+function minimax(newBoard, player) {
+  const result = checkWinner(newBoard);
+  if (result === 'O') return { score: 10 };
+  if (result === 'X') return { score: -10 };
+  if (result === 'tie') return { score: 0 };
+
+  let moves = [];
+
+  newBoard.forEach((cell, i) => {
+    if (cell === '') {
+      let move = {};
+      move.index = i;
+      newBoard[i] = player;
+
+      if (player === 'O') {
+        move.score = minimax(newBoard, 'X').score;
+      } else {
+        move.score = minimax(newBoard, 'O').score;
+      }
+
+      newBoard[i] = '';
+      moves.push(move);
+    }
+  });
+
+  let bestMove;
+  if (player === 'O') {
+    let bestScore = -Infinity;
+    moves.forEach(m => {
+      if (m.score > bestScore) {
+        bestScore = m.score;
+        bestMove = m;
+      }
+    });
+  } else {
+    let bestScore = Infinity;
+    moves.forEach(m => {
+      if (m.score < bestScore) {
+        bestScore = m.score;
+        bestMove = m;
+      }
+    });
+  }
+
+  return bestMove;
+}
+
 function computerMove() {
-  let empty = board.map((v,i) => v === '' ? i : null).filter(v => v !== null);
-  if (empty.length === 0) return;
-  let move = empty[Math.floor(Math.random() * empty.length)];
-  board[move] = 'O';
-  cells[move].textContent = 'O';
-  cells[move].classList.add('o');
-  checkWinner();
-  currentPlayer = 'X';
+  let best = minimax(board, 'O');
+  board[best.index] = 'O';
+  cells[best.index].textContent = 'O';
+  cells[best.index].classList.add('o');
 }
 
 cells.forEach(cell => {
@@ -54,13 +99,28 @@ cells.forEach(cell => {
     board[i] = currentPlayer;
     cell.textContent = currentPlayer;
     cell.classList.add(currentPlayer.toLowerCase());
-    checkWinner();
 
-    if (!gameOver) {
-      currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
-      if (mode === 'computer' && currentPlayer === 'O') {
-        setTimeout(computerMove, 400);
-      }
+    let result = checkWinner();
+    if (result) {
+      gameOver = true;
+      if (result !== 'tie') highlightWin();
+      message.textContent = result === 'tie' ? '😐 Seri' : `🎉 ${result} MENANG!`;
+      return;
+    }
+
+    currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+
+    if (mode === 'computer' && currentPlayer === 'O') {
+      setTimeout(() => {
+        computerMove();
+        let res = checkWinner();
+        if (res) {
+          gameOver = true;
+          if (res !== 'tie') highlightWin();
+          message.textContent = res === 'tie' ? '😐 Seri' : `🎉 ${res} MENANG!`;
+        }
+        currentPlayer = 'X';
+      }, 300);
     }
   });
 });
