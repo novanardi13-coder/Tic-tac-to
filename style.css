@@ -1,40 +1,49 @@
 body {
+  background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
   font-family: Arial, sans-serif;
   text-align: center;
-  background-color: #f4f4f4;
+  color: white;
 }
 
-h1 {
-  margin-top: 20px;
+.mode button {
+  margin: 10px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 20px;
+  font-weight: bold;
+  cursor: pointer;
 }
 
 #game {
   display: grid;
-  grid-template-columns: repeat(3, 100px);
-  grid-gap: 5px;
+  grid-template-columns: repeat(3, 110px);
+  gap: 8px;
   justify-content: center;
   margin: 20px auto;
 }
 
 .cell {
-  width: 100px;
-  height: 100px;
-  background-color: #fff;
-  border: 2px solid #000;
+  width: 110px;
+  height: 110px;
+  background: white;
+  border-radius: 15px;
+  font-size: 52px;
+  font-weight: bold;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 48px;
   cursor: pointer;
 }
 
-#message {
-  font-size: 20px;
-  margin: 10px;
+.cell.x { color: #ff4d4d; }
+.cell.o { color: #00ffcc; }
+
+.cell.win {
+  background: yellow;
+  animation: glow 1s infinite alternate;
 }
 
-button {
-  padding: 10px 20px;
-  font-size: 16px;
-  cursor: pointer;
+@keyframes glow {
+  from { box-shadow: 0 0 10px yellow; }
+  to { box-shadow: 0 0 25px orange; }
 }
